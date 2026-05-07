@@ -9,3 +9,4 @@ C:\Users\ASUS\Documents\PROGRAMACION\.NET\Cleanshop\Domain\obj\Debug\net10.0\Dom
 C:\Users\ASUS\Documents\PROGRAMACION\.NET\Cleanshop\Domain\obj\Debug\net10.0\refint\Domain.dll
 C:\Users\ASUS\Documents\PROGRAMACION\.NET\Cleanshop\Domain\obj\Debug\net10.0\Domain.pdb
 C:\Users\ASUS\Documents\PROGRAMACION\.NET\Cleanshop\Domain\obj\Debug\net10.0\ref\Domain.dll
+C:\Users\ASUS\Documents\PROGRAMACION\.NET\Cleanshop\Domain\obj\Debug\net10.0\Domain.sourcelink.json
