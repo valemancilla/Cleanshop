@@ -14,6 +14,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,7 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Dto\" />
+    <Folder Include="Dto\Products\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Mappings\" />
   </ItemGroup>
 
 </Project>

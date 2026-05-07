@@ -1,12 +1,17 @@
 using System;
 using Application.Abstractions;
 using Infrastructure.Context;
+using Infrastructure.Products;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.UnitOfWork;
 
 public class EfUnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _contextdb;
+    private IProduct? _product;
+
+    public IProduct Products => throw new NotImplementedException();
 
     public EfUnitOfWork(AppDbContext db)
     {
