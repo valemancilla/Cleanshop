@@ -12,6 +12,10 @@
 
   <ItemGroup>
     <Folder Include="Abstractions\" />
+    <Folder Include="Common\" />
+    <Folder Include="Common\Behaviors\" />
+    <Folder Include="UseCase\" />
+    <Folder Include="UseCase\Products\" />
   </ItemGroup>
 
   <PropertyGroup>

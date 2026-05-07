@@ -20,6 +20,8 @@
   <ItemGroup>
     <Folder Include="Configuration\" />
     <Folder Include="Context\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Repositories\Products\" />
     <Folder Include="UnitOfWork\" />
   </ItemGroup>
 
