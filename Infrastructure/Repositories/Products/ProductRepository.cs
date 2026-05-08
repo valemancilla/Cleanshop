@@ -4,45 +4,47 @@ using Domain.ValueObjects.Products;
 using Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories.Products;
+namespace Infrastructure.Products;
 
 public sealed class ProductRepository : IProduct
 {
-    private readonly AppDbContext _db;
+    private readonly AppDbContext _context;
 
-    public ProductRepository(AppDbContext db)
+    public ProductRepository(AppDbContext context)
     {
-        _db = db;
+        _context = context;
     }
 
-    public Task<Product?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => _db.Products.FirstOrDefaultAsync(p => p.Id == id, ct);
+    public Task<Product?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+        _context.Set<Product>().AsTracking().FirstOrDefaultAsync(p => p.Id == id, ct);
 
-    public Task<Product?> GetBySkuAsync(Sku sku, CancellationToken ct = default)
-        => _db.Products.FirstOrDefaultAsync(p => p.Sku == sku, ct);
+    public Task<Product?> GetBySkuAsync(Sku sku, CancellationToken ct = default) =>
+        _context.Set<Product>().AsTracking().FirstOrDefaultAsync(p => p.Sku == sku, ct);
 
-    public async Task<IReadOnlyList<Product>> GetAllAsync(CancellationToken ct = default)
-        => await _db.Products.OrderBy(p => p.Name).ToListAsync(ct);
+    public Task<IReadOnlyList<Product>> GetAllAsync(CancellationToken ct = default) =>
+        _context.Set<Product>().ToListAsync(ct).ContinueWith(t => (IReadOnlyList<Product>)t.Result, ct);
 
-    public async Task<IReadOnlyList<Product>> GetPagedAsync(
-        int page,
-        int pageSize,
-        string? search = null,
-        CancellationToken ct = default)
+    public async Task<IReadOnlyList<Product>> GetPagedAsync(int page, int pageSize, string? search = null, CancellationToken ct = default)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 10;
-
-        IQueryable<Product> query = _db.Products;
-
-        if (!string.IsNullOrWhiteSpace(search))
+        IQueryable<Product> query;
+        if (string.IsNullOrWhiteSpace(search))
         {
-            var s = search.Trim();
-            query = query.Where(p => p.Name.Contains(s));
+            query = _context.Products.AsNoTracking();
+        }
+        else
+        {
+            var pattern = $"%{search.Trim().ToUpper()}%";
+            query = _context.Products
+                .FromSqlInterpolated($@"
+                    SELECT *
+                    FROM products
+                    WHERE UPPER(""Name"") LIKE {pattern}
+                        OR UPPER(sku) LIKE {pattern}")
+                .AsNoTracking();
         }
 
         return await query
-            .OrderBy(p => p.Name)
+            .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);
@@ -50,32 +52,43 @@ public sealed class ProductRepository : IProduct
 
     public Task<int> CountAsync(string? search = null, CancellationToken ct = default)
     {
-        IQueryable<Product> query = _db.Products;
-
-        if (!string.IsNullOrWhiteSpace(search))
+        IQueryable<Product> query;
+        if (string.IsNullOrWhiteSpace(search))
         {
-            var s = search.Trim();
-            query = query.Where(p => p.Name.Contains(s));
+            query = _context.Products.AsNoTracking();
         }
-
+        else
+        {
+            var pattern = $"%{search.Trim().ToUpper()}%";
+            query = _context.Products
+                .FromSqlInterpolated($@"
+                    SELECT *
+                    FROM products
+                    WHERE UPPER(""Name"") LIKE {pattern}
+                        OR UPPER(sku) LIKE {pattern}")
+                .AsNoTracking();
+        }
         return query.CountAsync(ct);
     }
 
-    public async Task AddAsync(Product product, CancellationToken ct = default)
-        => await _db.Products.AddAsync(product, ct);
+    public Task AddAsync(Product product, CancellationToken ct = default)
+    {
+        _context.Products.Add(product);
+        return Task.CompletedTask;
+    }
 
     public Task UpdateAsync(Product product, CancellationToken ct = default)
     {
-        _db.Products.Update(product);
+        _context.Products.Update(product);
         return Task.CompletedTask;
     }
 
     public Task RemoveAsync(Product product, CancellationToken ct = default)
     {
-        _db.Products.Remove(product);
+        _context.Set<Product>().Remove(product);
         return Task.CompletedTask;
     }
 
-    public Task<bool> ExistsSkuAsync(Sku sku, CancellationToken ct = default)
-        => _db.Products.AnyAsync(p => p.Sku == sku, ct);
+    public Task<bool> ExistsSkuAsync(Sku sku, CancellationToken ct = default) =>
+        _context.Set<Product>().AnyAsync(p => p.Sku == sku, ct);
 }
