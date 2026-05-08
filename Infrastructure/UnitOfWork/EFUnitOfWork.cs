@@ -1,7 +1,7 @@
 using System;
 using Application.Abstractions;
 using Infrastructure.Context;
-using Infrastructure.Repositories.Products;
+using Infrastructure.Products;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.UnitOfWork;
@@ -10,8 +10,6 @@ public class EfUnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _contextdb;
     private IProduct? _product;
-
-    public IProduct Products => _product ??= new ProductRepository(_contextdb);
 
     public EfUnitOfWork(AppDbContext db)
     {
@@ -34,6 +32,18 @@ public class EfUnitOfWork : IUnitOfWork
         {
             await tx.RollbackAsync(ct);
             throw;
+        }
+    }
+
+    public IProduct Products
+    {
+        get
+        {
+            if (_product == null)
+            {
+                _product = new ProductRepository(_contextdb);
+            }
+            return _product;
         }
     }
 }
